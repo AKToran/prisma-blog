@@ -4,6 +4,7 @@ import { ILoginUser } from "./auth.interface";
 import jwt, { SignOptions } from "jsonwebtoken";
 import config from "../../config";
 import { jwtUtils } from "../../utils/jwt";
+import { ActiveStatus } from "../../../generated/prisma/client";
 
 const loginUserService = async (payload: ILoginUser) => {
   const { email, password } = payload;
@@ -16,6 +17,10 @@ const loginUserService = async (payload: ILoginUser) => {
 
   if (!matchPassword) {
     throw new Error("Password is incorrect.");
+  }
+
+  if (user.activeStatus === ActiveStatus.blocked) {
+    throw new Error("User is blocked. Please contact support.");
   }
 
   const jwtPayload = {
