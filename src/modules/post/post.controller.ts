@@ -11,13 +11,13 @@ const createPost = catchAsync(
     const result = await postService.createPostIntoDB(payload, id);
 
     sendResponse(res, {
-        success : true,
-        statusCode : httpStatus.CREATED,
-        message : "Post Created SuccessFully.",
-        data : result
-    })
+      success: true,
+      statusCode: httpStatus.CREATED,
+      message: "Post Created SuccessFully.",
+      data: result,
+    });
   },
-); 
+);
 
 const getAllPosts = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -27,8 +27,8 @@ const getAllPosts = catchAsync(
       success: true,
       statusCode: httpStatus.OK,
       message: "All posts",
-      data: result
-    })
+      data: result,
+    });
   },
 );
 
@@ -36,12 +36,36 @@ const getPostsStats = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {},
 );
 
-const getPostById = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
+const getMyPosts = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await postService.getMyPosts(req.user?.id);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "My posts retrieved successfully.",
+      data: result,
+    });
+  },
 );
 
-const getMyPosts = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
+const getPostById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const postId = req.params.postId;
+
+    if (!postId) {
+      throw new Error("Post Id Required In Params");
+    }
+
+    const result = await postService.getPostById(postId as string);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Post retrieved successfully",
+      data: result,
+    });
+  },
 );
 
 const updatePost = catchAsync(
