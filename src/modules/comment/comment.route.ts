@@ -33,7 +33,7 @@ router.delete(
     commentController.deleteComment
 );
 
-router.put(
+router.patch(
     "/:commentId/moderate",
     auth(Role.admin),
     commentController.moderateComment
