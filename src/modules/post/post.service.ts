@@ -64,35 +64,92 @@ const getMyPosts = async (userId: string) => {
 };
 
 const getPostById = async (postId: string) => {
-  await prisma.post.update({
-    where: {
-      id: postId,
-    },
-    data: {
-      views: {
-        increment: 1,
-      },
-    },
-  });
+  // await prisma.post.update({
+  //   where: {
+  //     id: postId,
+  //   },
+  //   data: {
+  //     views: {
+  //       increment: 1,
+  //     },
+  //   },
+  // });
 
-  const post = await prisma.post.findUniqueOrThrow({
-    where: {
-      id: postId,
-    },
-    include: {
-      author: {
-        omit: {
-          password: true,
-          createdAt: true,
-          updatedAt: true,
-          role: true,
+  // throw new Error("Database crashed!");
+
+  // const post = await prisma.post.findUniqueOrThrow({
+  //   where: {
+  //     id: postId,
+  //   },
+  //   include: {
+  //     author: {
+  //       omit: {
+  //         password: true,
+  //         createdAt: true,
+  //         updatedAt: true,
+  //         role: true,
+  //       },
+  //     },
+  //     comments: {
+  //       where: {
+  //         status: CommentStatus.approved,
+  //       },
+  //       orderBy: {
+  //         createdAt: "desc",
+  //       },
+  //     },
+  //     _count: {
+  //       select: {
+  //         comments: true,
+  //       },
+  //     },
+  //   },
+  // });
+
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    await tx.post.update({
+      where: {
+        id: postId,
+      },
+      data: {
+        views: {
+          increment: 1,
         },
       },
-      comments: true,
-    },
+    });
+
+    const post = await tx.post.findFirstOrThrow({
+      where: {
+        id: postId,
+      },
+      include: {
+        author: {
+          omit: {
+            password: true,
+            createdAt: true,
+            updatedAt: true,
+            role: true,
+          },
+        },
+        comments: {
+          where: {
+            status: CommentStatus.approved,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+      },
+    });
+    return post;
   });
 
-  return post;
+  return transactionResult;
 };
 
 const updatePostInDB = async (
